@@ -101,6 +101,6 @@ See [dependencies](docs/DEPENDENCIES.md) and [credits](docs/CREDITS.md) for the 
 - The local **AI Writer**, its Launcher, and the **ProjectQueue** companion node are **not included**.
 - No third-party model weights, Turbo LoRAs, local reference media or private prompts are distributed.
 - This project is not affiliated with or endorsed by MiniMax, ComfyUI or upstream node authors.
-- A source-code license has **not yet been selected**; public visibility does not itself grant redistribution or reuse rights.
+- The original Director code is distributed under the [MIT License](LICENSE). Third-party nodes, adapted code (if any), and model weights retain their own licenses and notices.
 
 *Screenshots and a public demonstration workflow will be added after review and validation.*
