@@ -1,5 +1,8 @@
 # H3 Director Studio V1
 
+![H3 Director Studio V1 — ComfyUI workflow overview](assets/h3-director-studio.png)
+
+
 > **Pre-release documentation draft.** Development features below describe the current project; installation on a clean ComfyUI instance and end-to-end Chain execution with the public package still require independent validation.
 
 **H3 Director Studio V1** is a custom ComfyUI node for controlling MiniMax H3 video generation from a centralized interface. It combines prompt and segment direction, configurable **BASE + UPSCALE** processing, and audiovisual continuity mechanisms. Users can work in **Single** or **Chain** mode without giving up ComfyUI's external node connections.
