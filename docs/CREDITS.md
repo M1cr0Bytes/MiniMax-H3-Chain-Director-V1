@@ -6,8 +6,8 @@ This repository orchestrates other people's engines and nodes. Their work remain
 |---|---|---|
 | **MiniMax H3** | Base multimodal video/audio model — MiniMaxAI | https://huggingface.co/MiniMaxAI/MiniMax-H3 |
 | **ComfyUI / Comfy-Org** | Runtime, native nodes, packaged MiniMax H3 weights and workflows | https://github.com/Comfy-Org/ComfyUI ; https://huggingface.co/Comfy-Org/MiniMax-H3 |
-| **Deno Custom Nodes — Deno2026** | H3 reference handling nodes used by Director | https://github.com/Deno2026/comfyui-deno-custom-nodes |
-| **KJNodes — Kijai** | ModelPreviewOverrideKJ | https://github.com/kijai/ComfyUI-KJNodes |
+| **Deno Custom Nodes — Deno2026** | H3 reference-to-video and multi-reference image loader used by Director/workflow (GPL-3.0-only upstream) | https://github.com/Deno2026/comfyui-deno-custom-nodes |
+| **Pixaroma — Pixaroma** | `PixaromaRunTimer` used in example workflow (MIT upstream; standalone timing display) | https://gitlab.com/pixaroma/comfyui-pixaroma |\n| **KJNodes — Kijai** | ModelPreviewOverrideKJ | https://github.com/kijai/ComfyUI-KJNodes |
 | **H3 Motion Context — NikoDemon80** | Saved-latent audiovisual continuity, loading, trimming | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context |
 | **MiniMax H3 Latent Upscaler — LBH-123-AI** | Upstream learned 3D latent upscaler | https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler |
 | **H3 Latent Upscaler-Plus — xmarre** | Alternative maintained fork of upscaler | https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus |
