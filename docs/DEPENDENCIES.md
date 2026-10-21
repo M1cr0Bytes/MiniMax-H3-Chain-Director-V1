@@ -8,7 +8,10 @@ The current `__init__.py` dynamically expands ComfyUI nodes. It imports `comfy_e
 |---|---|---|---|
 | Deno Custom Nodes | `DenoMiniMaxH3ReferenceToVideo`; optional `DenoMiniMaxH3ReferenceImageLoader` for workflows | https://github.com/Deno2026/comfyui-deno-custom-nodes | Identified |
 | KJNodes | `ModelPreviewOverrideKJ` | https://github.com/kijai/ComfyUI-KJNodes | Identified |
-| Other external packages | `MiniMaxH3MotionContext*`, `H3ContextWindows`, `MinimaxH3LatentUpscaler3D`, `ResolutionSelector`, `ComfyMathExpression`, `LTXVSeparateAVLatent`, `LTXVConcatAVLatent` | Source projects to be confirmed from user's installed custom_nodes | **Unverified attribution** |
+| H3 Motion Context (NikoDemon80) | `MiniMaxH3MotionContext`, `MiniMaxH3MotionContextLoadLatent`, `MiniMaxH3MotionContextSaveLatent`, `MiniMaxH3MotionContextTrim` | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context | Identified |
+| H3 Latent Upscaler (LBH-123-AI, upstream; xmarre fork available) | `MinimaxH3LatentUpscaler3D` | https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler ; https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus | Node family identified; installed implementation/version to verify |
+| Other external components | `H3ContextWindows`, `ResolutionSelector`, `ComfyMathExpression` | Source projects still to be verified against installed node definitions | **Unverified attribution** |
+| Native AV latent handling | `LTXVSeparateAVLatent`, `LTXVConcatAVLatent` | ComfyUI's AV latent utilities; verify availability in installed ComfyUI version | Native implementation; version to verify |
 
 Standard sampling and VAE decode nodes are supplied by ComfyUI. The supplied example workflow additionally uses `VHS_VideoCombine` (VideoHelperSuite) and optional rgthree LoRA loader; those are workflow dependencies rather than source-code imports.
 
