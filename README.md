@@ -103,14 +103,14 @@ The goal is integrated direction **without locking users into one fixed node gra
 - `web/studio.js`: ComfyUI frontend panel.
 - `docs/DEPENDENCIES.md`: dependencies and model setup notes.
 - `docs/CREDITS.md`: upstream authors, model acknowledgements and third-party licenses.
-- `workflows/`: public demonstration workflows (pending final sanitization and validation).
+- `workflows/`: [sanitized example workflow](workflows/H3_DIRECTOR_STUDIO_V1_PUBLIC.json) (runtime validation pending).
 - `assets/`: project screenshots and illustrations.
 
 ## Installation (manual, provisional)
 
 See the [step-by-step installation and validation guide](docs/INSTALLATION.md).
 
-Clone this repository to `ComfyUI/custom_nodes/ComfyUI-H3-Director-Studio-V1`, install the third-party custom nodes documented in `docs/DEPENDENCIES.md`, and restart ComfyUI. Model weights and LoRAs must be downloaded separately from their upstream sources. A tested installation matrix and runnable example workflow will follow.
+Clone this repository to `ComfyUI/custom_nodes/ComfyUI-H3-Director-Studio-V1`, install the third-party custom nodes documented in `docs/DEPENDENCIES.md`, and restart ComfyUI. Model weights and LoRAs must be downloaded separately from their upstream sources. A [sanitized example workflow](workflows/H3_DIRECTOR_STUDIO_V1_PUBLIC.json) is available; clean-install and end-to-end validation are still pending.
 
 ## Credits, licenses and distribution notes
 
@@ -121,4 +121,4 @@ See [dependencies](docs/DEPENDENCIES.md) and [credits](docs/CREDITS.md) for the 
 - This project is not affiliated with or endorsed by MiniMax, ComfyUI or upstream node authors.
 - The original Director code is distributed under the [MIT License](LICENSE). Third-party nodes, adapted code (if any), and model weights retain their own licenses and notices.
 
-*A public demonstration workflow will be added after review and validation.*
+*The public example workflow has been structurally checked, but it has not yet been tested on a fresh ComfyUI installation.*
