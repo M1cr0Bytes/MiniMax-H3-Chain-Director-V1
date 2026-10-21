@@ -1,28 +1,44 @@
-# Dependencies and models — verification draft
+# Dependencies — H3 Director Studio V1
 
-The current `__init__.py` dynamically expands ComfyUI nodes. It imports `comfy_execution.graph_utils.GraphBuilder`, supplied by ComfyUI.
+This list is based on **the published `__init__.py` backend and the 11-node public workflow**. Installing the repository alone does not install its upstream ComfyUI nodes. Use current compatible ComfyUI (including the core nodes listed below).
 
-## External custom-node packages referenced in the supplied working setup
+## Required custom-node packages
 
-| Package / project | Example node types | Link | Status |
-|---|---|---|---|
-| Deno Custom Nodes (Deno2026) | `DenoMiniMaxH3ReferenceToVideo` (used inside the Director); `DenoMiniMaxH3ReferenceImageLoader` (reference-loader node used in the demonstrated graph) | https://github.com/Deno2026/comfyui-deno-custom-nodes | **Required** for the supplied reference-based workflow |
-| KJNodes | `ModelPreviewOverrideKJ` | https://github.com/kijai/ComfyUI-KJNodes | Identified |
-| H3 Motion Context (NikoDemon80) | `MiniMaxH3MotionContext`, `MiniMaxH3MotionContextLoadLatent`, `MiniMaxH3MotionContextSaveLatent`, `MiniMaxH3MotionContextTrim` | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context | Identified |
-| H3 Latent Upscaler (LBH-123-AI, upstream; xmarre fork available) | `MinimaxH3LatentUpscaler3D` | https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler ; https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus | Node family identified; installed implementation/version to verify |
-| Other external components | `H3ContextWindows`, `ResolutionSelector`, `ComfyMathExpression` | Source projects still to be verified against installed node definitions | **Unverified attribution** |
-| Native AV latent handling | `LTXVSeparateAVLatent`, `LTXVConcatAVLatent` | ComfyUI's AV latent utilities; verify availability in installed ComfyUI version | Native implementation; version to verify |
+| Package | Nodes required by our Director / example workflow | Upstream |
+|---|---|---|
+| **Deno Custom Nodes — Deno2026** | `DenoMiniMaxH3ReferenceToVideo` (internal BASE/UPSCALE); `DenoMiniMaxH3ReferenceImageLoader` (external reference loader) | https://github.com/Deno2026/comfyui-deno-custom-nodes |
+| **H3 Motion Context — NikoDemon80** | `MiniMaxH3MotionContext`, `MiniMaxH3MotionContextLoadLatent`, `MiniMaxH3MotionContextSaveLatent`, `MiniMaxH3MotionContextTrim` | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context |
+| **KJNodes — Kijai** | `ModelPreviewOverrideKJ` (internal) | https://github.com/kijai/ComfyUI-KJNodes |
+| **H3 latent upscaler implementation** | `MinimaxH3LatentUpscaler3D` (internal in Final/UPSCALE) | Upstream: https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler ; variant: https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus |
+| **OBVPM Timeline — chanon** | `H3ContextWindows` (internal in Final/UPSCALE) | https://github.com/chanon/comfyui-obvpm-timeline |
+| **rgthree-comfy** | `Lora Loader Stack (rgthree)` (two external nodes: BASE and UPSCALE) | https://github.com/rgthree/rgthree-comfy |
+| **VideoHelperSuite** | `VHS_VideoCombine` (video+audio export) | https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite |
+| **ComfyUI-Pixaroma — Pixaroma** | `PixaromaRunTimer` (disconnected timer in public workflow) | https://gitlab.com/pixaroma/comfyui-pixaroma |
 
-| Pixaroma — ComfyUI-Pixaroma | `PixaromaRunTimer` | https://gitlab.com/pixaroma/comfyui-pixaroma | **Required to load the supplied workflow without a missing timer node; optional for generation itself** |\n\nStandard sampling and VAE decode nodes are supplied by ComfyUI. The supplied example workflow additionally uses `VHS_VideoCombine` (VideoHelperSuite) and optional rgthree LoRA loader; those are workflow dependencies rather than source-code imports.
+**Important distinctions:** Pixaroma's timer is required to open the example workflow without a missing-node alert, but not to generate video. VideoHelperSuite and rgthree are needed to load the example workflow **as supplied**; they are not internal dependencies of the Director's Python class. The H3 latent upscaler is used when the Final/UPSCALE branch executes.
 
-**Do not publish a claim of zero external dependencies.** There is no pinned ComfyUI or custom-node version matrix yet.
+## ComfyUI built-in nodes
 
-## Model weights
+These nodes are supplied by **ComfyUI core**, not separate custom-node packs:
 
-Original MiniMax H3 models and ComfyUI-packaged variants are documented at:
-- https://huggingface.co/MiniMaxAI/MiniMax-H3
-- https://huggingface.co/Comfy-Org/MiniMax-H3
+- `ResolutionSelector`, `ComfyMathExpression` (internal size and timing expressions)
+- `LTXVSeparateAVLatent`, `LTXVConcatAVLatent` (internal video/audio latent separation and merging)
+- `ModelAttentionBackend` (external workflow: Comfy Kitchen attention selected for the UPSCALE model; can fall back when unsupported)
+- `CLIPLoader`, `VAELoader`, `UNETLoader`, `BasicGuider`, `RandomNoise`, `KSamplerSelect`, `BasicScheduler`, `SamplerCustomAdvanced`, `VAEDecode`, `VAEDecodeAudio` and ComfyUI's `GraphBuilder` interface.
 
-The user must supply compatible diffusion models, CLIP/text encoder, audio and video VAEs and the required latent upscaler, plus any optional LoRAs. Exact combinations in the public example workflow will be documented after testing; do not download an arbitrary checkpoint solely from the filename found in the author's private workflow.
+Official references:
+- https://github.com/Comfy-Org/ComfyUI
+- https://github.com/Comfy-Org/ComfyUI/blob/master/comfy_extras/nodes_lt.py
+- https://github.com/Comfy-Org/docs/blob/main/built-in-nodes/ModelAttentionBackend.mdx
 
-**Model licensing**: Comfy-Org's MiniMax-H3 listing specifies `minimax-h3-community-license-agreement`. Model weights and any derivative fine-tunes have their own terms independent of this source-code repository. Comfy's H3 documentation states that commercially using locally generated outputs requires a MiniMax commercial license. Consult the provider's current terms for your use case.
+**Versions:** exact minimum-compatible versions of ComfyUI and third-party packages have **not been pinned**. Nodes being present upstream does not guarantee compatibility with older installations or other forks. Install updates from their original authors and consult the startup log for missing node registrations.
+
+## Model weights (not bundled)
+
+The user's ComfyUI installation must separately supply a compatible MiniMax H3 diffusion model, text encoder, video and audio VAEs, a suitable latent-upscaler checkpoint for Final/UPSCALE, and the LoRAs selected in the workflow. These assets retain their respective creators' licenses.
+
+- Official model distribution: https://huggingface.co/MiniMaxAI/MiniMax-H3
+- ComfyUI model packaging: https://huggingface.co/Comfy-Org/MiniMax-H3
+- Tested model preferences and attribution: [README](../README.md#recommended-models--photorealism-oriented-configuration) and [CREDITS](CREDITS.md)
+
+Third-party weights, LoRAs and their licenses are independent of the MIT license for the original Director code. Verify upstream terms, especially before commercial use.
