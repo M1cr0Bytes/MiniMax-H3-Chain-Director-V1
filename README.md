@@ -90,6 +90,8 @@ The goal is integrated direction **without locking users into one fixed node gra
 
 ## Installation (manual, provisional)
 
+See the [step-by-step installation and validation guide](docs/INSTALLATION.md).
+
 Clone this repository to `ComfyUI/custom_nodes/ComfyUI-H3-Director-Studio-V1`, install the third-party custom nodes documented in `docs/DEPENDENCIES.md`, and restart ComfyUI. Model weights and LoRAs must be downloaded separately from their upstream sources. A tested installation matrix and runnable example workflow will follow.
 
 ## Credits, licenses and distribution notes
