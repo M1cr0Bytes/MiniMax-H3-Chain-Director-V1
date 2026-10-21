@@ -49,6 +49,24 @@
 
 The workflow exposes **two separate LoRA loaders**, one for each stage. This is intentional: the first loader applies the selected **Turbo LoRA** and optional additional LoRAs during **BASE**, while the second can apply **a different Turbo LoRA** and optional enhancement LoRAs during **UPSCALE**. Different Turbo choices can therefore be tested for initial generation and final visual quality, with independently configured strengths.
 
+### Recommended models — photorealism-oriented configuration
+
+**H3 Director Studio V1 was developed with an emphasis on photorealism, natural textures, realistic motion, and fine visual detail.** The selections below reflect the developer's practical tests and visual preferences, **not mandatory dependencies, a universal quality ranking, or a controlled benchmark**.
+
+**BASE models used during development:**
+- **[Singularity Ref2VA v1.3](https://huggingface.co/WarmBloodAban/Minimax-h3_Singularity)** — a developer-tested MiniMax H3 variant.
+- **[10Eros TURBO-hybrid Beta5](https://huggingface.co/TenStrip/10Eros-Max)** — another developer-tested MiniMax H3 variant.
+
+**Preferred UPSCALE configuration for realistic-looking results:**
+- **[MiniMax H3 FL2V Turbo 4-Step](https://huggingface.co/Comfy-Org/MiniMax-H3/blob/main/loras/minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors)** — `minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors`. Preferred in the second sampling stage for the visual realism and quality observed in development tests. This file is labeled **FL2V**, not FL2VA; the names should not be treated as interchangeable.
+- **H3 LMS latent upscaler** — `h3_upscaler_lms_v0.1`, preferred for fine detail and natural-looking textures. It is a *checkpoint used by a compatible 3D latent-upscaler node*, not an alternative node. See the [LMS model documentation](https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI/blob/main/README.md).
+
+The two independent LoRA loaders allow different compatible Turbo and enhancement LoRAs to be selected for **BASE** and **UPSCALE**. Check that each model, LoRA, and upscaler is compatible with the chosen stage, node implementation, and settings.
+
+**These choices are recommendations, not restrictions.** Users can select their own compatible checkpoints, LoRAs, upscalers, and processing settings to pursue realistic, cinematic, stylized, or artistic results. Model weights are not included in this repository and retain their original creators' licenses.
+
+**The Director provides the tools. The creative choices belong to the user.**
+
 ### Attention acceleration: observed configuration
 
 During development on the original test system, better results were observed when the **additional Attention acceleration patch was not used in BASE** and was **kept only for UPSCALE**.
@@ -86,7 +104,7 @@ The goal is integrated direction **without locking users into one fixed node gra
 - `docs/DEPENDENCIES.md`: dependencies and model setup notes.
 - `docs/CREDITS.md`: upstream authors, model acknowledgements and third-party licenses.
 - `workflows/`: public demonstration workflows (pending final sanitization and validation).
-- `assets/`: future screenshots (not included yet).
+- `assets/`: project screenshots and illustrations.
 
 ## Installation (manual, provisional)
 
@@ -103,4 +121,4 @@ See [dependencies](docs/DEPENDENCIES.md) and [credits](docs/CREDITS.md) for the 
 - This project is not affiliated with or endorsed by MiniMax, ComfyUI or upstream node authors.
 - The original Director code is distributed under the [MIT License](LICENSE). Third-party nodes, adapted code (if any), and model weights retain their own licenses and notices.
 
-*Screenshots and a public demonstration workflow will be added after review and validation.*
+*A public demonstration workflow will be added after review and validation.*
