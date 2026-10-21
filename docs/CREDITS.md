@@ -15,7 +15,7 @@ This repository orchestrates other people's engines and nodes. Their work remain
 
 ## License boundaries
 
-- **Our Director's code**: no project license has yet been chosen or included. Licensing to be decided with the maintainer after checking any copied/adapted third-party code.
+- **Original Director code**: released under the [MIT License](../LICENSE), subject to verifying provenance and preserving any legally required notices for third-party code incorporated into the project.
 - **Model weights**: not distributed. MiniMax H3 lists a community license rather than a general software MIT license; see the official model card and agreement.
 - **Third-party custom nodes**: installed separately and remain governed by their upstream licenses; do not assume that a dependency's license also licenses this repository.
 - **Modified and derivative model variants or LoRAs**: credit the actual variant creator and link to its own model card once a public workflow uses that specific variant.
@@ -23,4 +23,4 @@ This repository orchestrates other people's engines and nodes. Their work remain
 
 ## Source material still to audit
 
-Before selecting a code license and publishing a tagged release, confirm origin and copyright status of the internal node implementation, including any pieces adapted from third-party code. The current files refer to prior implementations and upstream components, but those references alone do not establish provenance or permission.
+Before publishing a tagged release, confirm origin and copyright status of the internal node implementation, including any pieces adapted from third-party code. The current files refer to prior implementations and upstream components, but those references alone do not establish provenance or permission.
