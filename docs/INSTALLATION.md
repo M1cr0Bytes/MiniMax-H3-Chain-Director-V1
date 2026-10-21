@@ -20,7 +20,7 @@ Or download the repository as ZIP and extract it to `ComfyUI/custom_nodes/ComfyU
 
 Consult [DEPENDENCIES.md](DEPENDENCIES.md) for source links and attribution. The Director backend references nodes from Deno Custom Nodes, H3 Motion Context, KJNodes, and an H3 latent upscaler implementation, among others. Some node origins and exact compatible versions remain **unverified**. Follow each upstream project's own installation instructions. No single automated install command has been verified for this bundle.
 
-For an external example graph you may also need rgthree and VideoHelperSuite, depending on its nodes. These are not required simply to register the Director itself.
+**Reference-loader requirement:** install [Deno Custom Nodes](https://github.com/Deno2026/comfyui-deno-custom-nodes) for both `DenoMiniMaxH3ReferenceImageLoader` (visible image-reference panel) and `DenoMiniMaxH3ReferenceToVideo` (used by the Director internally).\n\n**Pixaroma requirement for the demonstrated graph:** install [ComfyUI-Pixaroma](https://gitlab.com/pixaroma/comfyui-pixaroma) to load its `PixaromaRunTimer` without a missing-node warning. This disconnected timer measures generation time and is **not needed for the Director's underlying video generation**. Upstream installation: from `custom_nodes`, run `git clone https://gitlab.com/pixaroma/comfyui-pixaroma.git` and restart ComfyUI.\n\nThe workflow may also need rgthree LoRA loaders and VideoHelperSuite for its external nodes. These are not required simply to register the Director itself.
 
 ## 4. Install model files
 
