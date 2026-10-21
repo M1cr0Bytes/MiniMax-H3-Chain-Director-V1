@@ -24,3 +24,13 @@ This repository orchestrates other people's engines and nodes. Their work remain
 ## Source material still to audit
 
 Before publishing a tagged release, confirm origin and copyright status of the internal node implementation, including any pieces adapted from third-party code. The current files refer to prior implementations and upstream components, but those references alone do not establish provenance or permission.
+## Developer-tested model recommendations (weights not bundled)
+
+These are **optional, photorealism-oriented preferences**, not mandatory models or a controlled performance ranking:
+
+- **Singularity Ref2VA v1.3** — original project: https://huggingface.co/WarmBloodAban/Minimax-h3_Singularity
+- **10Eros TURBO-hybrid Beta5** — **TenStrip**: https://huggingface.co/TenStrip/10Eros-Max
+- **FL2V Turbo 4-Step LoRA** — Comfy-Org MiniMax H3 distribution: https://huggingface.co/Comfy-Org/MiniMax-H3/blob/main/loras/minimax_h3_fl2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors
+- **H3 LMS latent upscaler checkpoint** — documented by **Alissonerdx**: https://huggingface.co/Alissonerdx/Minimax-H3-ComfyUI/blob/main/README.md ; initialized from work by **LBH-123-AI**.
+
+Model creators and distributors retain their own copyright and license terms. See the linked model pages before downloading or redistributing weights. The Director repository's MIT license does **not** apply to these third-party weights.
