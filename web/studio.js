@@ -79,7 +79,7 @@ function decode(raw) {
 }
 const encode = shots => shots.map((shot,i)=>`[SEGMENT ${i+1}]\n${shot??''}`).join('\n\n');
 // Technical nodes are no longer in the canvas: virtual read/write adapters map
-// the original Studio UI to persistent widgets on the integrated Director.
+// the Director controls to persistent widgets on the node.
 let studioVirtualNodes = new Map();
 const graphNode = id => studioVirtualNodes.get(id) ?? null;
 function widget(node,name,idx=null) {
@@ -158,7 +158,7 @@ function mirror(node) {
     'lms','dpmpp_2m','dpmpp_2m_sde','res_multistep','uni_pc','ddim'];
   const SCHEDULERS=['simple','normal','karras','exponential','sgm_uniform','ddim_uniform','beta','linear_quadratic'];
   const UPSCALER_MODELS=[]; // Listado real de MinimaxH3LatentUpscaler3D, NO una lista fija.
-  // H3 V1: Unlike the old fixed eleven-item list, mirror the native ComfyUI
+  // Read the available options from the native ComfyUI
   // KSamplerSelect and BasicScheduler definitions. Both choices update together.
   // This is FRONTEND ONLY: model graph, saved values and sampling engine unchanged.
   const replaceChoiceValues=(target,values)=>{
@@ -207,7 +207,7 @@ function mirror(node) {
   hideNativeWidgets();
   const state=()=>Object.fromEntries(Object.keys(source).map(k=>[k,source[k].value]));
   function keep(name,v) {source[name].value=v;source[name].callback?.(v);app.graph?.setDirtyCanvas?.(true,true);}
-  // Keep the panel inside the node's resize borders.  In V8 the DOM widget had
+  // Keep the panel inside the node's resize borders. The DOM widget has
   // zero margin and occupied the entire canvas hit area, intercepting corner drags.
   const panel=$('div',{display:'flex',flexDirection:'column',gap:'6px',boxSizing:'border-box',
     padding:'11px',width:'100%',height:'100%',overflowY:'auto',borderRadius:'3px',
@@ -247,7 +247,7 @@ function mirror(node) {
   jump.append(clipHint);
   panel.append(status,count,warning);
   // Built-in live monitor. Uses ComfyUI's own progress / binary preview events.
-  // It deliberately does not depend on H3 ProjectQueue, video output nodes, or
+  // The monitor receives ComfyUI and KJNodes events without external monitor nodes or
   // its separate queue backend. Event listeners are removed with the node.
   line(panel);headline(panel,'LIVE GENERATION MONITOR');
   const monitor=$('section',{background:colors.panel,border:`1px solid ${colors.line}`,
@@ -292,7 +292,7 @@ function mirror(node) {
     const play=monitorVideo.play?.();
     if(play?.catch)play.catch(()=>{});
   }
-  // Passive listeners follow the working ProjectQueue monitor: previews and
+  // Passive listeners capture previews and
   // progress are displayed even if the Director is not the event origin.
   const monitorIsOwner=()=>true;
   function monitorSetStatus(message,pct){
@@ -335,7 +335,7 @@ function mirror(node) {
     previewObjectURL=URL.createObjectURL(blob);
     monitorShowImage(previewObjectURL);
   }
-  // Same bounded base64-to-Blob approach as H3 ProjectQueue's manual monitor.
+  // Decode bounded base64 media payloads into browser Blob objects.
   // Avoid huge data: URLs for animated MP4/WebP previews.
   function decodeKJMedia(data,mime){
     if(!['image/jpeg','image/png','image/webp','video/mp4'].includes(mime))return null;
