@@ -1,4 +1,4 @@
-# H3 Director Studio V1
+# MiniMax H3 Chain Director V1
 
 ![H3 Director Studio V1 — ComfyUI workflow overview](assets/h3-director-studio.png)
 
@@ -88,6 +88,10 @@ Although the Director offers a centralized interface, its **external ComfyUI nod
 - Experimenting with other supported generation arrangements.
 
 The goal is integrated direction **without locking users into one fixed node graph**. Compatibility with every possible external configuration has not been verified.
+
+## Integrated live monitor
+
+The Director's live generation monitor displays step progress and animated previews through **KJNodes Model Preview Override**, listening to the `kj_preview_override` websocket event; it also supports ComfyUI progress events. **ComfyUI-KJNodes is required** for live previews. The integrated monitor is independent of the previously used ProjectQueue companion node.
 
 ## Validation status
 
