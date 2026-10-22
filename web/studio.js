@@ -246,52 +246,147 @@ function mirror(node) {
   const clipHint=$('span',{...S.caption,alignSelf:'center'},'For clip N, Load = N−1 / Save = N.');
   jump.append(clipHint);
   panel.append(status,count,warning);
-
-  // Integrated live monitor: passive progress and KJ Preview Override events.
+  // Built-in live monitor. Uses ComfyUI's own progress / binary preview events.
+  // It deliberately does not depend on H3 ProjectQueue, video output nodes, or
+  // its separate queue backend. Event listeners are removed with the node.
   line(panel);headline(panel,'LIVE GENERATION MONITOR');
-  const mon=$('section',{background:colors.panel,border:'1px solid '+colors.line,borderRadius:'7px',padding:'8px',display:'flex',flexDirection:'column',gap:'6px'});
-  const monInfo=$('div',{...S.caption},'Ready · no active render');
-  const monTrack=$('div',{height:'8px',width:'100%',background:colors.field,borderRadius:'5px',overflow:'hidden'});
-  const monFill=$('div',{height:'100%',width:'0%',background:'#39a978',transition:'width 120ms linear'});monTrack.append(monFill);
-  const monImage=$('img',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',display:'none',background:'#12151a'});
-  const monVideo=$('video',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',display:'none',background:'#12151a'});
-  monVideo.autoplay=true;monVideo.muted=true;monVideo.loop=true;monVideo.playsInline=true;monVideo.controls=false;
-  const monPlaceholder=$('div',{...S.caption,textAlign:'center',padding:'15px'},'Waiting for KJ Preview Override frames');
-  const monFooter=$('div',{...S.caption},'ComfyUI progress + KJ Preview Override media');
-  mon.append(monInfo,monTrack,monVideo,monImage,monPlaceholder,monFooter);
-  const monDetails=$('details',{open:true});
-  monDetails.append($('summary',{fontSize:'12px',cursor:'pointer',fontWeight:'bold'},'Monitor / Preview'),mon);panel.append(monDetails);
-  let monURL=null,monStart=0,monPct=0;
-  function monitorSetStatus(message,pct){monInfo.textContent=message;if(Number.isFinite(pct))monPct=Math.max(0,Math.min(100,pct));monFill.style.width=monPct+'%';}
-  function monitorBegin(){monStart=Date.now();monPct=0;monImage.style.display='none';monVideo.style.display='none';monPlaceholder.style.display='block';try{monVideo.pause();}catch{}monitorSetStatus('Rendering clip '+source.clip_index.value+' of '+shots.length+' · starting',0);}
-  function monitorEnd(ok){const elapsed=monStart?' · '+Math.round((Date.now()-monStart)/1000)+'s':'';monitorSetStatus((ok?'Completed':'Stopped / error')+' · clip '+source.clip_index.value+elapsed,ok?100:monPct);}
-  function monitorShowMedia(blob,mime){
-    const prior=monURL;monURL=URL.createObjectURL(blob);
-    if(mime==='video/mp4'){monImage.style.display='none';monVideo.src=monURL;monVideo.style.display='block';const play=monVideo.play?.();if(play?.catch)play.catch(()=>{});}
-    else{try{monVideo.pause();}catch{}monVideo.removeAttribute('src');monVideo.load?.();monImage.src=monURL;monImage.style.display='block';monVideo.style.display='none';}
-    monPlaceholder.style.display='none';if(prior)URL.revokeObjectURL(prior);
+  const monitor=$('section',{background:colors.panel,border:`1px solid ${colors.line}`,
+    borderRadius:'7px',padding:'8px',display:'flex',flexDirection:'column',gap:'6px'});
+  const monitorInfo=$('div',{...S.caption},'Ready · no active render');
+  const monitorTrack=$('div',{height:'8px',width:'100%',background:colors.field,
+    borderRadius:'5px',overflow:'hidden'});
+  const monitorFill=$('div',{height:'100%',width:'0%',background:'#39a978',transition:'width 120ms linear'});
+  monitorTrack.append(monitorFill);
+  const monitorImage=$('img',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',
+    borderRadius:'4px',display:'none',background:'#12151a'});
+  const monitorVideo=$('video',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',
+    borderRadius:'4px',display:'none',background:'#12151a'});
+  monitorVideo.autoplay=true;monitorVideo.muted=true;monitorVideo.loop=true;monitorVideo.playsInline=true;monitorVideo.controls=false;
+  const monitorPlaceholder=$('div',{...S.caption,textAlign:'center',padding:'15px'},
+    'Live preview appears here when ComfyUI or KJ Preview Override sends frames.');
+  const monitorFooter=$('div',{...S.caption},'Progress is reported by ComfyUI. KJ Preview Override images are used when available.');
+  monitor.append(monitorInfo,monitorTrack,monitorVideo,monitorImage,monitorPlaceholder,monitorFooter);
+  const monitorArea=$('details',{open:true});
+  monitorArea.append($('summary',{fontSize:'12px',cursor:'pointer',fontWeight:'bold'},'Monitor / Preview'),monitor);
+  panel.append(monitorArea);
+  let previewObjectURL=null, monitorStart=0,monitorLastNode=null,monitorPct=0;
+  function monitorShowPlaceholder(){
+    monitorImage.style.display='none';
+    monitorVideo.style.display='none';
+    try{ monitorVideo.pause(); }catch{}
+    monitorPlaceholder.style.display='block';
   }
-  function monitorDecodeKJ(data,mime){
+  function monitorShowImage(src){
+    try{ monitorVideo.pause(); }catch{}
+    monitorVideo.removeAttribute('src'); monitorVideo.load?.();
+    monitorImage.src=src;
+    monitorImage.style.display='block';
+    monitorVideo.style.display='none';
+    monitorPlaceholder.style.display='none';
+  }
+  function monitorShowVideo(src){
+    monitorImage.style.display='none';
+    monitorVideo.src=src;
+    monitorVideo.style.display='block';
+    monitorPlaceholder.style.display='none';
+    const play=monitorVideo.play?.();
+    if(play?.catch)play.catch(()=>{});
+  }
+  // Passive listeners follow the working ProjectQueue monitor: previews and
+  // progress are displayed even if the Director is not the event origin.
+  const monitorIsOwner=()=>true;
+  function monitorSetStatus(message,pct){
+    monitorInfo.textContent=message;
+    if(Number.isFinite(pct))monitorPct=Math.max(0,Math.min(100,pct));
+    monitorFill.style.width=`${monitorPct}%`;
+  }
+  function monitorBegin(){
+    monitorStart=Date.now();monitorLastNode=null;monitorPct=0;
+    monitorShowPlaceholder();
+    monitorSetStatus(`Rendering clip ${source.clip_index.value} of ${shots.length} · starting`,0);
+  }
+  function monitorEnd(ok){
+    const elapsed=monitorStart?` · ${Math.round((Date.now()-monitorStart)/1000)}s`:'';
+    monitorSetStatus(`${ok?'Completed':'Stopped / error'} · clip ${source.clip_index.value}${elapsed}`,ok?100:monitorPct);
+  }
+  function monitorProgress(event){
+    if(!monitorIsOwner())return;
+    const detail=event?.detail??{};
+    const val=Number(detail.value),max=Number(detail.max);
+    const pct=max>0&&Number.isFinite(val)?Math.round(100*val/max):monitorPct;
+    monitorSetStatus(`Clip ${source.clip_index.value}/${shots.length} · sampling ${Number.isFinite(val)?val:'?'} / ${max>0?max:'?'} (${pct}%)`,pct);
+  }
+  function monitorExecuting(event){
+    if(!monitorIsOwner())return;
+    const name=event?.detail?.node;
+    if(name!==undefined && name!==null){
+      monitorLastNode=String(name);
+      monitorFooter.textContent=`Executing node ${monitorLastNode} · live images depend on preview support`;
+    }
+  }
+  function monitorPreview(event){
+    if(!monitorIsOwner())return;
+    const payload=event?.detail;
+    // ComfyUI api.js emits a Blob in b_preview; some versions expose it in
+    // a nested detail field. Ignore unknown formats instead of crashing.
+    const blob=payload instanceof Blob?payload:(payload?.blob instanceof Blob?payload.blob:null);
+    if(!blob)return;
+    if(previewObjectURL)try{URL.revokeObjectURL(previewObjectURL);}catch{}
+    previewObjectURL=URL.createObjectURL(blob);
+    monitorShowImage(previewObjectURL);
+  }
+  // Same bounded base64-to-Blob approach as H3 ProjectQueue's manual monitor.
+  // Avoid huge data: URLs for animated MP4/WebP previews.
+  function decodeKJMedia(data,mime){
     if(!['image/jpeg','image/png','image/webp','video/mp4'].includes(mime))return null;
-    if(typeof data!=='string'||data.length>34000000)return null;
-    try{const binary=atob(data),chunks=[];for(let i=0;i<binary.length;i+=32768){const part=binary.slice(i,i+32768),bytes=new Uint8Array(part.length);for(let j=0;j<part.length;j++)bytes[j]=part.charCodeAt(j);chunks.push(bytes);}return new Blob(chunks,{type:mime});}catch(_){return null;}
+    if(typeof data!=='string'||data.length>34_000_000)return null;
+    try{
+      const binary=atob(data),chunks=[];
+      for(let i=0;i<binary.length;i+=32768){
+        const part=binary.slice(i,i+32768),b=new Uint8Array(part.length);
+        for(let j=0;j<part.length;j++)b[j]=part.charCodeAt(j);
+        chunks.push(b);
+      }
+      return new Blob(chunks,{type:mime});
+    }catch(_){return null;}
   }
-  // Passive listeners are intentional: KJ events can be emitted by hidden expanded nodes.
-  const monitorProgress=e=>{const d=e?.detail??{},step=Number(d.value),max=Number(d.max);const pct=max>0&&Number.isFinite(step)?Math.round(100*step/max):monPct;monitorSetStatus('Clip '+source.clip_index.value+'/'+shots.length+' · sampling '+(Number.isFinite(step)?step:'?')+' / '+(max>0?max:'?')+' ('+pct+'%)',pct);};
-  const monitorExecuting=e=>{if(e?.detail?.node!=null)monFooter.textContent='Executing node '+e.detail.node+' · waiting for KJ preview';};
-  const monitorPreview=e=>{const d=e?.detail,blob=d instanceof Blob?d:(d?.blob instanceof Blob?d.blob:null);if(blob)monitorShowMedia(blob,blob.type||'image/jpeg');};
-  const monitorKJPreview=e=>{
-    const d=e?.detail??{};if(!d.image)return;
-    const mime=String(d.mime||'image/jpeg'),step=Number(d.step),max=Number(d.total);
-    if(Number.isFinite(step)&&max>0){const pct=Math.max(monPct,Math.round(100*step/max));monitorSetStatus('Clip '+source.clip_index.value+'/'+shots.length+' · sampling '+step+' / '+max+' ('+pct+'%)',pct);}
-    monFooter.textContent='KJ Preview Override'+(d.node_id!=null?' · node '+d.node_id:'')+(Number.isFinite(step)&&max>0?' · step '+step+'/'+max:'');
-    const blob=monitorDecodeKJ(d.image,mime);if(blob)monitorShowMedia(blob,mime);
-  };
-  api.addEventListener('progress',monitorProgress);api.addEventListener('executing',monitorExecuting);api.addEventListener('b_preview',monitorPreview);api.addEventListener('kj_preview_override',monitorKJPreview);
+  function monitorMedia(blob,mime){
+    const previous=previewObjectURL;
+    previewObjectURL=URL.createObjectURL(blob);
+    if(mime==='video/mp4')monitorShowVideo(previewObjectURL);
+    else monitorShowImage(previewObjectURL);
+    if(previous)URL.revokeObjectURL(previous);
+  }
+  function monitorKJPreview(event){
+    if(!monitorIsOwner())return;
+    const payload=event?.detail??{};
+    const b64=payload.image;
+    if(!b64)return;
+    const mime=String(payload.mime||'image/jpeg');
+    const step=Number(payload.step), total=Number(payload.total);
+    if(Number.isFinite(step) && total>0){
+      const pct=Math.max(monitorPct, Math.round(100*step/total));
+      monitorSetStatus(`Clip ${source.clip_index.value}/${shots.length} · sampling ${step} / ${total} (${pct}%)`, pct);
+    }
+    monitorFooter.textContent=`KJ Preview Override${payload.node_id!=null?` · node ${payload.node_id}`:''}${Number.isFinite(step)&&total>0?` · step ${step}/${total}`:''}`;
+    const blob=decodeKJMedia(b64,mime);
+    if(blob)monitorMedia(blob,mime);
+  }
+  api.addEventListener('progress',monitorProgress);
+  api.addEventListener('executing',monitorExecuting);
+  api.addEventListener('b_preview',monitorPreview);
+  api.addEventListener('kj_preview_override',monitorKJPreview);
   node.__h3MonitorCleanup=()=>{
-    api.removeEventListener('progress',monitorProgress);api.removeEventListener('executing',monitorExecuting);api.removeEventListener('b_preview',monitorPreview);api.removeEventListener('kj_preview_override',monitorKJPreview);
-    if(monURL)URL.revokeObjectURL(monURL);monURL=null;try{monVideo.pause();}catch{}monVideo.removeAttribute('src');
+    api.removeEventListener('progress',monitorProgress);
+    api.removeEventListener('executing',monitorExecuting);
+    api.removeEventListener('b_preview',monitorPreview);
+    api.removeEventListener('kj_preview_override',monitorKJPreview);
+    if(previewObjectURL)try{URL.revokeObjectURL(previewObjectURL);}catch{}
+    previewObjectURL=null;
+    try{monitorVideo.pause();}catch{}
+    monitorVideo.removeAttribute('src');
   };
+
 
   line(panel);headline(panel,'VIDEO · BASE PASS');
   r=row(panel);
@@ -902,8 +997,7 @@ function mirror(node) {
 }
 app.registerExtension({
   name:'h3.director.studio.v1.integrated',
-  async beforeRegisterNodeDef(nodeType,nodeData){
-    if(nodeData.name!==TYPE)return;
+  async beforeRegisterNodeDef(nodeType,nodeData){    if(nodeData.name!==TYPE)return;
     const origCreated=nodeType.prototype.onNodeCreated;
     const origConfigure=nodeType.prototype.onConfigure;
     const origRemoved=nodeType.prototype.onRemoved;
