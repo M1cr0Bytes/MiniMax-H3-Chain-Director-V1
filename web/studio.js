@@ -157,10 +157,10 @@ function mirror(node) {
   const SAMPLER_CHOICES=['euler','euler_ancestral','heun','dpm_2','dpm_2_ancestral',
     'lms','dpmpp_2m','dpmpp_2m_sde','res_multistep','uni_pc','ddim'];
   const SCHEDULERS=['simple','normal','karras','exponential','sgm_uniform','ddim_uniform','beta','linear_quadratic'];
-  const UPSCALER_MODELS=[]; // Listado real de MinimaxH3LatentUpscaler3D, NO una lista fija.
+  const UPSCALER_MODELS=[]; // Available upscaler models are loaded dynamically.
   // Read the available options from the native ComfyUI
   // KSamplerSelect and BasicScheduler definitions. Both choices update together.
-  // This is FRONTEND ONLY: model graph, saved values and sampling engine unchanged.
+  // Frontend options do not modify the sampling engine or stored values.
   const replaceChoiceValues=(target,values)=>{
     const valid=Array.isArray(values) ? values.filter(v=>typeof v==='string' && v.trim()) : [];
     if(valid.length)target.splice(0,target.length,...new Set(valid));
@@ -208,7 +208,7 @@ function mirror(node) {
   const state=()=>Object.fromEntries(Object.keys(source).map(k=>[k,source[k].value]));
   function keep(name,v) {source[name].value=v;source[name].callback?.(v);app.graph?.setDirtyCanvas?.(true,true);}
   // Keep the panel inside the node's resize borders. The DOM widget has
-  // zero margin and occupied the entire canvas hit area, intercepting corner drags.
+  // zero margin, leaving resize controls accessible.
   const panel=$('div',{display:'flex',flexDirection:'column',gap:'6px',boxSizing:'border-box',
     padding:'11px',width:'100%',height:'100%',overflowY:'auto',borderRadius:'3px',
     position:'relative',minWidth:'0',minHeight:'0',
@@ -247,8 +247,7 @@ function mirror(node) {
   jump.append(clipHint);
   panel.append(status,count,warning);
   // Built-in live monitor. Uses ComfyUI's own progress / binary preview events.
-  // The monitor receives ComfyUI and KJNodes events without external monitor nodes or
-  // its separate queue backend. Event listeners are removed with the node.
+  // Receive ComfyUI and KJNodes preview events directly; listeners are removed with the node.
   line(panel);headline(panel,'LIVE GENERATION MONITOR');
   const monitor=$('section',{background:colors.panel,border:`1px solid ${colors.line}`,
     borderRadius:'7px',padding:'8px',display:'flex',flexDirection:'column',gap:'6px'});
@@ -292,8 +291,7 @@ function mirror(node) {
     const play=monitorVideo.play?.();
     if(play?.catch)play.catch(()=>{});
   }
-  // Passive listeners capture previews and
-  // progress are displayed even if the Director is not the event origin.
+  // Passive listeners display preview and progress events from expanded runtime nodes.
   const monitorIsOwner=()=>true;
   function monitorSetStatus(message,pct){
     monitorInfo.textContent=message;
@@ -909,7 +907,7 @@ function mirror(node) {
     hideNativeWidgets();
     anchorOutputs(node);
     updateTheme(node,panel);
-    // Defer mirroring until LiteGraph has restored all original nodes.
+    // Defer mirroring until LiteGraph has restored the graph nodes.
     Promise.resolve().then(()=>syncControls());
   };
   // Manual size grip stays accessible even if a ComfyUI frontend build
