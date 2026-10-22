@@ -11,7 +11,7 @@ Use a current ComfyUI installation with a compatible Python/PyTorch/GPU environm
 From the `ComfyUI/custom_nodes` directory, run:
 
 ```bash
-git clone https://github.com/jorge325cabrio4-sketch/M1croBytes.git ComfyUI-H3-Director-Studio-V1
+git clone https://github.com/M1cr0Bytes/MiniMax-H3-Chain-Director-V1.git ComfyUI-H3-Director-Studio-V1
 ```
 
 Or download the repository as ZIP and extract it to `ComfyUI/custom_nodes/ComfyUI-H3-Director-Studio-V1`. Confirm that the directory directly contains `__init__.py` and `web/studio.js` (not a second nested folder).
@@ -25,6 +25,8 @@ Consult [DEPENDENCIES.md](DEPENDENCIES.md) for source links and attribution. The
 ## 4. Install model files
 
 Install suitable MiniMax H3 model weights, text encoder, video and audio VAEs, latent upscaler weights and any optional LoRAs using the corresponding upstream instructions and licenses. Specific model/LoRA combinations will be documented separately after review; this guide intentionally does not prescribe unverified downloads.
+
+**Live monitor:** Install and enable the KJNodes package. During generation, the Director listens to `kj_preview_override` events from the existing `ModelPreviewOverrideKJ` node to display a preview. Progress updates are also shown. The ProjectQueue companion is **not required** for this feature.
 
 ## 5. Restart and verify node registration
 
