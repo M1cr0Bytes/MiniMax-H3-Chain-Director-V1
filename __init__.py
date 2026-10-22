@@ -1,7 +1,6 @@
 """H3 Director V1 integrated backend: expands hidden ComfyUI runtime nodes.
 
-This is a developer-stage implementation and is not certified against a local GPU.
-The original V8 class and extensions are not changed.
+Integrated ComfyUI node for MiniMax H3 single-clip and multi-segment generation.
 """
 import re
 import random
@@ -40,7 +39,7 @@ def safe_project(value):
 
 
 class H3IntegratedVideoWriter:
-    """Preserve original PixaromaSaveMp4 encoder and force base-continuity save first."""
+    """Encode video and audio while saving the base continuity latent first."""
     @classmethod
     def INPUT_TYPES(cls):
         return {'required': {
@@ -149,7 +148,7 @@ class H3DirectorStudioV1:
                      conditioning=base_ref.out(0), vae=video_vae, latent=base_ref.out(1),
                      context_length=22, audio_context_length=24, context_latent=context_load.out(0),
                      audio_vae=audio_vae)
-        # Preserve the tested model preview patch, but previews are sent from an ephemeral runtime node.
+        # Attach KJ model preview support to the BASE sampler.
         model_for_preview = add('ModelPreviewOverrideKJ', model=base_model, vae=video_vae,
                                 max_resolution=1024, jpeg_quality=80,
                                 suppress_default_preview=True, preview_frames=99,
