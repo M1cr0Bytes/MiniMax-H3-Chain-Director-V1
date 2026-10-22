@@ -247,6 +247,52 @@ function mirror(node) {
   jump.append(clipHint);
   panel.append(status,count,warning);
 
+  // Integrated live monitor: passive progress and KJ Preview Override events.
+  line(panel);headline(panel,'LIVE GENERATION MONITOR');
+  const mon=$('section',{background:colors.panel,border:'1px solid '+colors.line,borderRadius:'7px',padding:'8px',display:'flex',flexDirection:'column',gap:'6px'});
+  const monInfo=$('div',{...S.caption},'Ready · no active render');
+  const monTrack=$('div',{height:'8px',width:'100%',background:colors.field,borderRadius:'5px',overflow:'hidden'});
+  const monFill=$('div',{height:'100%',width:'0%',background:'#39a978',transition:'width 120ms linear'});monTrack.append(monFill);
+  const monImage=$('img',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',display:'none',background:'#12151a'});
+  const monVideo=$('video',{width:'100%',height:'auto',maxHeight:'290px',objectFit:'contain',display:'none',background:'#12151a'});
+  monVideo.autoplay=true;monVideo.muted=true;monVideo.loop=true;monVideo.playsInline=true;monVideo.controls=false;
+  const monPlaceholder=$('div',{...S.caption,textAlign:'center',padding:'15px'},'Waiting for KJ Preview Override frames');
+  const monFooter=$('div',{...S.caption},'ComfyUI progress + KJ Preview Override media');
+  mon.append(monInfo,monTrack,monVideo,monImage,monPlaceholder,monFooter);
+  const monDetails=$('details',{open:true});
+  monDetails.append($('summary',{fontSize:'12px',cursor:'pointer',fontWeight:'bold'},'Monitor / Preview'),mon);panel.append(monDetails);
+  let monURL=null,monStart=0,monPct=0;
+  function monitorSetStatus(message,pct){monInfo.textContent=message;if(Number.isFinite(pct))monPct=Math.max(0,Math.min(100,pct));monFill.style.width=monPct+'%';}
+  function monitorBegin(){monStart=Date.now();monPct=0;monImage.style.display='none';monVideo.style.display='none';monPlaceholder.style.display='block';try{monVideo.pause();}catch{}monitorSetStatus('Rendering clip '+source.clip_index.value+' of '+shots.length+' · starting',0);}
+  function monitorEnd(ok){const elapsed=monStart?' · '+Math.round((Date.now()-monStart)/1000)+'s':'';monitorSetStatus((ok?'Completed':'Stopped / error')+' · clip '+source.clip_index.value+elapsed,ok?100:monPct);}
+  function monitorShowMedia(blob,mime){
+    const prior=monURL;monURL=URL.createObjectURL(blob);
+    if(mime==='video/mp4'){monImage.style.display='none';monVideo.src=monURL;monVideo.style.display='block';const play=monVideo.play?.();if(play?.catch)play.catch(()=>{});}
+    else{try{monVideo.pause();}catch{}monVideo.removeAttribute('src');monVideo.load?.();monImage.src=monURL;monImage.style.display='block';monVideo.style.display='none';}
+    monPlaceholder.style.display='none';if(prior)URL.revokeObjectURL(prior);
+  }
+  function monitorDecodeKJ(data,mime){
+    if(!['image/jpeg','image/png','image/webp','video/mp4'].includes(mime))return null;
+    if(typeof data!=='string'||data.length>34000000)return null;
+    try{const binary=atob(data),chunks=[];for(let i=0;i<binary.length;i+=32768){const part=binary.slice(i,i+32768),bytes=new Uint8Array(part.length);for(let j=0;j<part.length;j++)bytes[j]=part.charCodeAt(j);chunks.push(bytes);}return new Blob(chunks,{type:mime});}catch(_){return null;}
+  }
+  // Passive listeners are intentional: KJ events can be emitted by hidden expanded nodes.
+  const monitorProgress=e=>{const d=e?.detail??{},step=Number(d.value),max=Number(d.max);const pct=max>0&&Number.isFinite(step)?Math.round(100*step/max):monPct;monitorSetStatus('Clip '+source.clip_index.value+'/'+shots.length+' · sampling '+(Number.isFinite(step)?step:'?')+' / '+(max>0?max:'?')+' ('+pct+'%)',pct);};
+  const monitorExecuting=e=>{if(e?.detail?.node!=null)monFooter.textContent='Executing node '+e.detail.node+' · waiting for KJ preview';};
+  const monitorPreview=e=>{const d=e?.detail,blob=d instanceof Blob?d:(d?.blob instanceof Blob?d.blob:null);if(blob)monitorShowMedia(blob,blob.type||'image/jpeg');};
+  const monitorKJPreview=e=>{
+    const d=e?.detail??{};if(!d.image)return;
+    const mime=String(d.mime||'image/jpeg'),step=Number(d.step),max=Number(d.total);
+    if(Number.isFinite(step)&&max>0){const pct=Math.max(monPct,Math.round(100*step/max));monitorSetStatus('Clip '+source.clip_index.value+'/'+shots.length+' · sampling '+step+' / '+max+' ('+pct+'%)',pct);}
+    monFooter.textContent='KJ Preview Override'+(d.node_id!=null?' · node '+d.node_id:'')+(Number.isFinite(step)&&max>0?' · step '+step+'/'+max:'');
+    const blob=monitorDecodeKJ(d.image,mime);if(blob)monitorShowMedia(blob,mime);
+  };
+  api.addEventListener('progress',monitorProgress);api.addEventListener('executing',monitorExecuting);api.addEventListener('b_preview',monitorPreview);api.addEventListener('kj_preview_override',monitorKJPreview);
+  node.__h3MonitorCleanup=()=>{
+    api.removeEventListener('progress',monitorProgress);api.removeEventListener('executing',monitorExecuting);api.removeEventListener('b_preview',monitorPreview);api.removeEventListener('kj_preview_override',monitorKJPreview);
+    if(monURL)URL.revokeObjectURL(monURL);monURL=null;try{monVideo.pause();}catch{}monVideo.removeAttribute('src');
+  };
+
   line(panel);headline(panel,'VIDEO · BASE PASS');
   r=row(panel);
   const duration=input('number',0.5,180,0.5);item(r,'Duration per clip · seconds',duration);
@@ -576,14 +622,14 @@ function mirror(node) {
       source.h3_rng_value.value=Number(next&((1n<<53n)-1n));
       seed.value=String(source.h3_rng_value.value);
     }
-    chainMeta.awaiting=true;chainRunOwner=true;warning.textContent='';
+    chainMeta.awaiting=true;chainRunOwner=true;warning.textContent='';monitorBegin();
     try{await app.queuePrompt(0,1);return true;}
     catch(e){chainMeta.awaiting=false;chainMeta.chaining=false;chainRunOwner=false;
-      warning.textContent=`Cannot queue clip: ${e.message}`;return false;}
+      warning.textContent=`Cannot queue clip: ${e.message}`;monitorEnd(false);return false;}
   }
   function completeQueue(ok){
     if(!chainRunOwner||!chainMeta.awaiting)return;
-    chainMeta.awaiting=false;
+    chainMeta.awaiting=false;monitorEnd(ok);
     if(!ok){chainMeta.chaining=false;chainRunOwner=false;
       warning.textContent='Rendering failed or interrupted; Chain stopped.';return;}
     if(!chainMeta.chaining){chainRunOwner=false;refreshStatus();return;}
@@ -860,8 +906,10 @@ app.registerExtension({
     if(nodeData.name!==TYPE)return;
     const origCreated=nodeType.prototype.onNodeCreated;
     const origConfigure=nodeType.prototype.onConfigure;
+    const origRemoved=nodeType.prototype.onRemoved;
     nodeType.prototype.onNodeCreated=function(){const x=origCreated?.apply(this,arguments);mirror(this);return x;};
     nodeType.prototype.onConfigure=function(){const x=origConfigure?.apply(this,arguments);this.__h3studio?.restore();return x;};
+    nodeType.prototype.onRemoved=function(){this.__h3MonitorCleanup?.();return origRemoved?.apply(this,arguments);};
   },
   loadedGraphNode(node){
     if(node.comfyClass===TYPE||node.type===TYPE){
