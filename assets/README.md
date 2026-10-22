@@ -1,1 +1,1 @@
-Screenshots and diagrams for the public description will be added after approval.
+Project screenshots and diagrams used in the README.
