@@ -8,7 +8,7 @@ This list is based on **the published `__init__.py` backend and the 11-node publ
 |---|---|---|
 | **Deno Custom Nodes — Deno2026** | `DenoMiniMaxH3ReferenceToVideo` (internal BASE/UPSCALE); `DenoMiniMaxH3ReferenceImageLoader` (external reference loader) | https://github.com/Deno2026/comfyui-deno-custom-nodes |
 | **H3 Motion Context — NikoDemon80** | `MiniMaxH3MotionContext`, `MiniMaxH3MotionContextLoadLatent`, `MiniMaxH3MotionContextSaveLatent`, `MiniMaxH3MotionContextTrim` | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context |
-| **KJNodes — Kijai** | `ModelPreviewOverrideKJ` (internal) | https://github.com/kijai/ComfyUI-KJNodes |
+| **KJNodes — Kijai** | `ModelPreviewOverrideKJ` (internal); `kj_preview_override` frontend event supplies animated live previews | https://github.com/kijai/ComfyUI-KJNodes |
 | **H3 latent upscaler implementation** | `MinimaxH3LatentUpscaler3D` (internal in Final/UPSCALE) | Upstream: https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler ; variant: https://github.com/xmarre/Comfyui_Minimax_h3_latent_Upscaler-Plus |
 | **OBVPM Timeline — chanon** | `H3ContextWindows` (internal in Final/UPSCALE) | https://github.com/chanon/comfyui-obvpm-timeline |
 | **rgthree-comfy** | `Lora Loader Stack (rgthree)` (two external nodes: BASE and UPSCALE) | https://github.com/rgthree/rgthree-comfy |
