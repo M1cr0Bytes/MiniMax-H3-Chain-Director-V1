@@ -4,7 +4,7 @@ This list is based on **the published `__init__.py` backend and the 11-node publ
 
 ## Required custom-node packages
 
-| Package | Nodes required by our Director / example workflow | Upstream |
+| Package | Nodes used by the Director / example workflow | Upstream |
 |---|---|---|
 | **Deno Custom Nodes — Deno2026** | `DenoMiniMaxH3ReferenceToVideo` (internal BASE/UPSCALE); `DenoMiniMaxH3ReferenceImageLoader` (external reference loader) | https://github.com/Deno2026/comfyui-deno-custom-nodes |
 | **H3 Motion Context — NikoDemon80** | `MiniMaxH3MotionContext`, `MiniMaxH3MotionContextLoadLatent`, `MiniMaxH3MotionContextSaveLatent`, `MiniMaxH3MotionContextTrim` | https://github.com/NikoDemon80/ComfyUI-H3-Motion-Context |
@@ -39,6 +39,6 @@ The user's ComfyUI installation must separately supply a compatible MiniMax H3 d
 
 - Official model distribution: https://huggingface.co/MiniMaxAI/MiniMax-H3
 - ComfyUI model packaging: https://huggingface.co/Comfy-Org/MiniMax-H3
-- Tested model preferences and attribution: [README](../README.md#recommended-models--photorealism-oriented-configuration) and [CREDITS](CREDITS.md)
+- Model recommendations and attribution: [README](../README.md#recommended-models--photorealism-oriented-configuration) and [CREDITS](CREDITS.md)
 
-Third-party weights, LoRAs and their licenses are independent of the MIT license for the original Director code. Verify upstream terms, especially before commercial use.
+Third-party weights, LoRAs and their licenses are independent of the MIT license for the Director code. Verify upstream terms, especially before commercial use.
