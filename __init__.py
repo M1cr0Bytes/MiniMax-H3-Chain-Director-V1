@@ -172,7 +172,10 @@ class H3DirectorStudioV1:
             latent3d = add('MinimaxH3LatentUpscaler3D',
                            latent=av_parts.out(0), model_name=upscaler_model,
                            mode='scale by multiplier', **{'mode.scale': float(upscale_multiplier)},
-                           align=32, enable_temporal_chunking=True, force_unload=True,
+                           # Support both LBH-123-AI and xmarre Plus upscaler signatures.
+                           align=32, keep_proportion=True,
+                           enable_temporal_chunking=True, force_unload=True,
+                           offload_after_upscale=True,
                            device='cuda', precision='fp16')
             joint = add('LTXVConcatAVLatent', video_latent=latent3d.out(0), audio_latent=av_parts.out(1))
             final_width = add('ComfyMathExpression', expression='max(32, round(a*b/32)*32)',
